@@ -5,7 +5,7 @@ https://github.com/NVIDIA/DeepLearningExamples/tree/master/PyTorch/Classificatio
 
 ## Test Data
 You have several choices:
-1. The 
+1. Imagenet small subset download： https://github.com/fastai/imagenette
 
 
 
