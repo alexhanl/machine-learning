@@ -110,10 +110,13 @@ python ./main.py --arch resnet50 --epochs 3 --batch-size 256 --label-smoothing 0
 ```
 
 Start the inference process. 
+Batch size is 256
 ```
 python ./main.py --arch resnet50 --evaluate --epochs 1 --pretrained --batch-size 256 /imagenet
+```
+Batch size is 1
+```
 python ./main.py --arch resnet50 --evaluate --epochs 1 --pretrained --batch-size 1 /imagenet
-
 ```
 
 ## Bitfusion vs. native GPU: A Comparision
