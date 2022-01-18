@@ -127,7 +127,7 @@ The testbed has 2 esxi servers, each has 1 Bitfusion server with 2 V100 32GB GPU
 Here's the test results. 
 
 
-| test case | Training/Inference  | Modle      | batch size | Bitfusion/Native | train/val.compute_ips (img/s) |
+| test case | Training/Inference  | Model      | batch size | Bitfusion/Native | train/val.compute_ips (img/s) |
 | --------- | ------------------  | --------   | ---------- | ---------------- | ----------------------------- |
 | 1         | Training            | ResNet50   | 256        | Native           | 823.74                        |   
 | 2         | Training            | ResNet50   | 256        | Bitfusion        | 800.49                        |          
