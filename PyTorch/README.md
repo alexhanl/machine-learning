@@ -122,7 +122,7 @@ python ./main.py --arch resnet50 --evaluate --epochs 1 --pretrained --batch-size
 ## Bitfusion vs. native GPU: A Comparison
 Apparently, the accuracy should be the same, so we just compare the throughput.  In this scenario, we compare the train/val.compute_ips, which means the the number of the images processed per second. 
 
-The testbed has 2 esxi servers, each has 1 Bitfusion server with 2 V100 32GB GPUs passthroughed.  We also have several ubuntu 18.04 client VMs.  In this test, when we use bitfusion, we specify the --server_list to force the bitfusion client to connect to the bitfusion server on different ESXi host.  Thus the data has to be transfered by the cable.  We use 10G Ethernet and the MTU has been set to 9000 from end to end. 
+The testbed has 2 esxi servers, each has 1 Bitfusion server with 2 V100 32GB GPUs passthroughed.  We also have several ubuntu 18.04 client VMs.  In this test, when we use bitfusion, we specify the --server_list to force the bitfusion client to connect to the bitfusion server on different ESXi host.  Thus the data has to be transfered by the cable.  We use 10G Ethernet and the MTU has been set to 9000 from end to end.  No RDMA is used. 
 
 Here's the test results. 
 
