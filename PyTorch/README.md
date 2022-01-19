@@ -1,6 +1,6 @@
 # PyTorch ResNet50 image classification with Bitfusion
 
-The test code is from the nvidia github repo as below.  I just take a snapshot here.  
+The test code in ConvNets directory is from the nvidia github repo as below.  I just took a snapshot here.  
 https://github.com/NVIDIA/DeepLearningExamples/tree/master/PyTorch/Classification/ConvNets/
 
 
