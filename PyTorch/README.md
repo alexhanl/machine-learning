@@ -139,11 +139,11 @@ Here's the test results.
 | 8         | Inference           | resnext101 | 1          | Bitfusion        | 47.41                         |  
 
 From the above data, we have the findings. 
-- When the batch size is 256, the performance degradation is minor, The bitfusion throughput is about about 97% of the native GPU.  (800.49/823.74 = 97.18%, 1159.00/1182.87 = 97.98%)
+- When the batch size is 256, the performance degradation is minor, The bitfusion throughput is about 97% of the native GPU.  (800.49/823.74 = 97.18%, 1159.00/1182.87 = 97.98%)
 
 - When the batch size is 1 to simulate the real time inference, the performance degradation is noticeable. 
-    - for ResNet50 model about 62.25% (76.18/122.37 = 62.25)
-    - for resnext101 model about 69.13%  (47.41/68.58 = 69.13). 
+    - for ResNet50 model: about 62.25% (76.18/122.37 = 62.25)
+    - for resnext101 model: about 69.13%  (47.41/68.58 = 69.13). 
 
 From the inference scenario, we also find that the result of resnext101 is better than ResNet50, because resnext101 is larger and more complex. 
 
