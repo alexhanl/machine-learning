@@ -148,3 +148,5 @@ From the above data, we have the findings.
 From the inference scenario, we also find that the result of resnext101 is better than ResNet50, because resnext101 is larger and more complex. 
 
 However, we can benefit from bitfusion, because actually in a ResNet50 inference, 2 GB is GPU memory is sufficient.   Therefore, the remaining 30 GB memory of V100 GPU can be used by other processes at the sametime. 
+
+The original test results are saved in the image folder. 
