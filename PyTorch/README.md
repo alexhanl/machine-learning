@@ -18,11 +18,11 @@ tar -zxf imagenette2-160.tgz
 ## 2. Clone the repository
 ```
 git clone https://github.com/alexhanl/machine-learning
-cd ./machine-learning/PyTorch/ConvNets
 ```
 
 ## 3. Build the resnet50 container image
 ```
+cd ~/machine-learning/PyTorch/ConvNets
 docker build . -t nvidia_resnet50
 ```
 
