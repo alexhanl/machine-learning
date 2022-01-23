@@ -1,0 +1,305 @@
+
+
+# 快速部署 VMware Bitfusion 示例应用
+
+
+## 1. 背景
+---
+在人工智能/机器学习场景中，VMware Bitfusion 大大提升了 GPU 资源的使用效率。 近期，很多用户和合作伙伴联系我们，希望体验一下这个产品。 坦白的说，这个产品的文档写的很清晰，而且有中文版；产品到现在也已经发布到了3.5的版本，成熟度也是没有问题的。 所以产品的安装和配置，只要按照文档来做，应该是很顺利的（至少我没有遇到过问题）。 但是在之后的验证中，一些小伙伴由于不熟悉机器学习的应用，遇到了很多问题。 本文主要介绍如何快速方便的部署一个 tensorflow 的示例应用。
+
+本文主要针对两类读者：（1）用户 IT 基础设施管理人员，（2）VMware 合作伙伴。 收益包括，读者将会了解机器学习应用组件的基本架构和使用方式，以及如何和 Bitfusion 结合，这样在后期可以更好的和机器学习应用团队沟通。
+
+Bitfusion 的文档分为三个部分，第三部分 —— 《VMware vSphere Bitfusion 示例指南》—— 其实就是教大家利用 bitfusion 调用远程 GPU 池中的资源，运行一个 tensorflow 的 benchmark 应用。 整个手册中，只有最后一步是讲如何使用 bitfusion 调用 tensorflow 的 benchmark 应用；之前所有的内容都是在讲解如何搭建 tensorflow，以及所有的依赖，包括 Python、Nvidia Cuda Toolkit 和 Nvidia cuDNN 等软件。 但是你如果按照手册来做，不一定会成功（至少我就没有成功，出现找不到 library 文件的问题），本质原因是软件组件版本配置的问题。 
+
+为了更方便的体验 Bitfusion，我建议，大家参考我这份材料部署 tensorflow。:-)
+
+简单的说，有两种方法，下文中分别介绍。
+1. 使用 Conda 
+2. 使用 容器
+
+本次验证需要能够访问互联网。如果在某些用户环境中，不能访问互联网，建议现在有互联网访问的环境中安装配置相关软件，并将虚拟机导出成OVA文件，然后再导入正式的验证环境中。
+
+<br />
+
+---
+## 2. 使用 Conda 部署和管理机器学习环境
+
+Conda 官网 (https://conda.io/)  的介绍说：Conda is an open source package management system and environment management system that runs on Windows, macOS and Linux.  在本次实验中，我们使用 Conda 安装和配置 tensorflow-gpu，以及相关的依赖。
+
+操作系统我们选择 Ubuntu 18.04 LTS. 具体步骤如下：
+
+### 2.1 安装配置 Miniconda
+
+顾名思义，Miniconda 是 Conda 的一个最小精简版本。其安装说明可以参考：https://docs.conda.io/en/latest/miniconda.html#linux-installers
+
+
+两点重要说明：
+ - 在原来的 Ubuntu 18.04 操作系统上面可能已经有 Python 3.6 的版本 （你可以通过在命令行中运行 python3 -V 查看），我们不用管它。
+ - 不用安装 Nvidia GPU 驱动 - 我们的 bitfusion 客户端所在的虚拟机没有安装真实的 GPU，所以不需要驱动。 
+
+我们可以安装一个 Python 3.9 的版本的 Miniconda。
+
+1. 通过 wget 获取安装介质
+```
+wget https://repo.anaconda.com/miniconda/Miniconda3-py39_4.10.3-Linux-x86_64.sh
+```
+
+2. 安装 Miniconda
+```
+bash Miniconda3-py39_4.10.3-Linux-x86_64.sh
+```
+
+在logout当前用户，并重新login之后，我们看到命令行提示的开头出现了 “(base)”的提示。如果我们运行 conda 命令，会出现 conda 命令的说明。
+```
+(base) demouser@demoserver:~$ conda
+usage: conda [-h] [-V] command ...
+
+conda is a tool for managing and deploying applications, environments and packages.
+
+...
+```
+### 2.2 部署 Tensorflow 运行环境
+
+运行 conda create -n tf-gpu tensorflow-gpu 
+其中 "-n tf-gpu" 定义了环境名称为 "tf-gpu”，在安装完成之后，我们会使用这个名称进行环境切换; tensorflow-gpu 是本次实验所需要安装的环境。 我们也可以指定版本，比如 tensorflow-gpu=2.4
+具体可以参考这个文档：https://docs.anaconda.com/anaconda/user-guide/tasks/tensorflow/
+
+由于命令输出很长，我们截取了其中重要的部分，其余都用省略号表示。 从命令行输出，我们可以看到 Conda 替你下载并安装了包括 cudatoolkit-10.1.243、cudnn-7.6.5、tensorflow-gpu-2.4.1 在内的所有的相关依赖。
+
+```
+(base) demouser@demoserver:~$ conda create -n tf-gpu tensorflow-gpu
+
+...
+
+## Package Plan ##
+
+  environment location: /home/swadmin/miniconda3/envs/tf-gpu
+
+  added / updated specs:
+    - tensorflow-gpu
+
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    
+    ...
+    
+    cudatoolkit-10.1.243       |       h6bb024c_0       347.4 MB
+    cudnn-7.6.5                |       cuda10.1_0       179.9 MB
+    cupti-10.1.168             |                0         1.4 MB
+    
+    ...
+
+    tensorboard-2.4.0          |     pyhc547734_0         8.8 MB
+    tensorboard-plugin-wit-1.6.0|             py_0         630 KB
+    tensorflow-2.4.1           |gpu_py39h8236f22_0           4 KB
+    tensorflow-base-2.4.1      |gpu_py39h29c2da4_0       195.2 MB
+    tensorflow-estimator-2.5.0 |     pyh7b7c402_0         267 KB
+    tensorflow-gpu-2.4.1       |       h30adc30_0           3 KB
+    
+    ...
+
+    ------------------------------------------------------------
+                                           Total:       911.8 MB
+
+The following NEW packages will be INSTALLED:
+
+  ...
+
+  cudatoolkit        pkgs/main/linux-64::cudatoolkit-10.1.243-h6bb024c_0
+  cudnn              pkgs/main/linux-64::cudnn-7.6.5-cuda10.1_0
+  cupti              pkgs/main/linux-64::cupti-10.1.168-0
+
+  ...
+
+  python             pkgs/main/linux-64::python-3.9.5-h12debd9_4
+  
+  ...
+
+  tensorboard        pkgs/main/noarch::tensorboard-2.4.0-pyhc547734_0
+  tensorboard-plugi~ pkgs/main/noarch::tensorboard-plugin-wit-1.6.0-py_0
+  tensorflow         pkgs/main/linux-64::tensorflow-2.4.1-gpu_py39h8236f22_0
+  tensorflow-base    pkgs/main/linux-64::tensorflow-base-2.4.1-gpu_py39h29c2da4_0
+  tensorflow-estima~ pkgs/main/noarch::tensorflow-estimator-2.5.0-pyh7b7c402_0
+  tensorflow-gpu     pkgs/main/linux-64::tensorflow-gpu-2.4.1-h30adc30_0
+  
+  ...
+  
+
+Proceed ([y]/n)? y
+
+Downloading and Extracting Packages
+...
+
+Preparing transaction: done
+Verifying transaction: done
+Executing transaction: done
+#
+# To activate this environment, use
+#
+#     $ conda activate tf-gpu
+#
+# To deactivate an active environment, use
+#
+#     $ conda deactivate
+```
+
+在安装完成之后，我们按照提示执行 conda activate tf-gpu 切换到 tf-gpu 环境之下。 切换之后，我们发现命令行提示符切换成了(tf-gpu)。您可以非常方便的知道您当前所在的环境。 可能读者也注意到，Conda 可以管理多套环境，避免冲突，并且可以方便的切换。 至此，Tensorflow GPU 2.4 已经安装完成。 
+
+```
+(base) demouser@demoserver:~$  conda activate tf-gpu
+(tf-gpu) demouser@demoserver:~$
+```
+
+### 2.3 运行 tensorflow benchmarks 应用
+
+其中到了这一步，我们可以采用 Bitfusion 官方文档中的方式继续，大家可以参考 https://docs.vmware.com/cn/VMware-vSphere-Bitfusion/3.0/Example-Guide/GUID-641DB3E6-CEE8-48F9-9A1C-49D2C0712081.html。 
+我们使用的的 benchmarks 应用为 tf_cnn_benchmarks，链接如下：https://github.com/tensorflow/benchmarks/tree/master/scripts/tf_cnn_benchmarks
+
+
+但是国内的小伙伴们可能遇到了 github 下载文件的麻烦。当然，在墙内，我们有墙内的方法，我就一并奉上了 - 谁也别想阻挡我们学习~~~
+```
+(tf-gpu) demouser@demoserver:~$ git clone https://github.com.cnpmjs.org/tensorflow/benchmarks
+```
+```
+(tf-gpu) demouser@demoserver:~$ cd benchmarks/
+(tf-gpu) demouser@demoserver:~$ git checkout cnn_tf_v2.1_compatible
+```
+```
+(tf-gpu) demouser@demoserver:~$ bitfusion run -n 1 -p 1 -- python3 \
+ ./scripts/tf_cnn_benchmarks/tf_cnn_benchmarks.py \
+ --data_format=NCHW \
+ --batch_size=64 \
+ --model=resnet50 \
+ --variable_update=replicated \
+ --local_parameter_device=gpu \
+ --nodistortions \
+ --num_gpus=1 \
+ --num_batches=300 \
+ --data_dir=./scripts/tf_cnn_benchmarks/test_data/fake_tf_record_data/ \
+ --data_name=imagenet \
+ --use_fp16=False
+```
+
+最后一条命令使用 0.5 个 GPU 完成训练任务。 执行完成后，如果您看到了如下的输出，那么恭喜你。你已经成功的运行了一个 Tensorflow 的示例应用，在本次示例中，训练的效率为大概每秒处理 316 张图片。
+```
+...
+Running warm up
+2021-07-27 18:10:56.360873: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublas.so.10
+2021-07-27 18:10:56.964502: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudnn.so.7
+2021-07-27 18:10:58.244067: W tensorflow/stream_executor/gpu/asm_compiler.cc:63] Running ptxas --version returned 256
+2021-07-27 18:10:58.269624: W tensorflow/stream_executor/gpu/redzone_allocator.cc:314] Internal: ptxas exited with non-zero error code 256, output:
+Relying on driver to perform ptx compilation.
+Modify $PATH to customize ptxas location.
+This message will be only logged once.
+Done warm up
+Step    Img/sec total_loss
+1       images/sec: 318.4 +/- 0.0 (jitter = 0.0)        8.141
+10      images/sec: 318.5 +/- 0.5 (jitter = 1.1)        7.993
+20      images/sec: 318.3 +/- 0.5 (jitter = 1.4)        8.374
+30      images/sec: 317.7 +/- 0.4 (jitter = 1.7)        7.995
+40      images/sec: 317.2 +/- 0.4 (jitter = 2.4)        8.057
+50      images/sec: 316.9 +/- 0.4 (jitter = 1.6)        8.098
+60      images/sec: 316.6 +/- 0.5 (jitter = 1.9)        7.724
+70      images/sec: 316.4 +/- 0.5 (jitter = 1.9)        7.902
+80      images/sec: 316.3 +/- 0.4 (jitter = 2.5)        7.767
+90      images/sec: 316.3 +/- 0.4 (jitter = 2.1)        7.535
+100     images/sec: 316.3 +/- 0.4 (jitter = 2.4)        7.630
+----------------------------------------------------------------
+total images/sec: 316.07
+----------------------------------------------------------------
+```
+
+## 3. 使用 容器 部署和管理机器学习环境
+容器 简直是所有环境问题的终极利器。 对于管理环境，我深恶痛绝。 即使有上面的 Conda，你不还是要管理 Conda 吗？ 如果出问题，你不还是要去修复吗？  抱歉我有点激动 ...
+
+下面正式介绍使用容器技术。注意，我们当前讲的是容器，不是 Kubernetes。如果您是高手，希望用 Kubernetes 运行机器学习任务，请移步我司大师 Henry Zhang 的微信公众号 - ”亨利笔记”，或者访问 Github: https://github.com/vmware/bitfusion-with-kubernetes-integration
+
+特别说明：
+- 我们需要您安装 docker 社区版，而不是 nvidia-docker：至于为什么？因为 nvidia-docker 通过 docker runtime 的方式自动集成 GPU。注意，是真实的 GPU。 所以 nvidia-docker 会认为客户端有真实的 GPU，并且必须安装 GPU 驱动，显然这与 bitfusion 的原理是不一样的。如果您有兴趣，可以阅读这份文档：https://developer.nvidia.com/blog/gpu-containers-runtime/，在当前的实验中，我们并不需要了解这些。
+
+### 3.1 安装 docker 社区版
+其实，这一步应该有很多的资料可以参考。不过为了方便大家，我还是 copy/paste 过来了。
+
+```
+curl https://get.docker.com | sh && sudo systemctl --now enable docker
+sudo groupadd docker 
+sudo usermod -aG docker $USER
+```
+
+### 3.2 制作包含 bitfusion 客户端的 tensorflow 容器镜像
+
+包含以下步骤：
+1. 到 vSphere Web Client 生成并下载 bitfusion token
+2. 通过 docker pull 下载相关的 tensorflow 容器镜像
+3. 构建包含 bitfusion 客户端和相关配置的容器镜像
+
+具体描述如下：
+1. 到 vSphere Web Client 生成并下载 bitfusion token，如图所示：
+
+<br />
+<br />
+
+2. 通过 docker pull 下载相关的 tensorflow 容器镜像
+```
+docker pull nvcr.io/nvidia/tensorflow:19.12-tf2-py3
+```
+
+3. 构建包含 bitfusion 客户端和相关配置的容器镜像
+首先我们需要编写一个Dockerfile，如下所示：
+
+```
+FROM nvcr.io/nvidia/tensorflow:19.12-tf2-py3
+MAINTAINER XXX
+
+# Install the bitfusion client
+WORKDIR /workspace/bitfusion
+RUN curl -fSslL -O https://packages.vmware.com/bitfusion/ubuntu/18.04/bitfusion-client-ubuntu1804_4.0.1-5_amd64.deb
+RUN apt-get update && apt-get install -y ./bitfusion-client-ubuntu1804_4.0.1-5_amd64.deb
+
+# Copy the token files
+RUN mkdir -p /root/.bitfusion
+COPY ./.bitfusion/client.yaml /root/.bitfusion/client.yaml
+COPY ./.bitfusion/servers.conf /etc/bitfusion/servers.conf
+RUN mkdir -p /etc/bitfusion/tls
+COPY ca.crt /etc/bitfusion/tls/ca.crt
+```
+
+而后，我们执行 Docker build 来生成新的 容器镜像。
+```
+sudo docker build -t tensorflow:19.12-tf2-py3-bitfusion .
+```
+
+### 3.3 运行 tensorflow benchmarks 应用
+首先我们需要运行一个容器，并且进入到命令行终端。下面是sample的命令行，我们采用了一些额外的参数（--privileged --pid=host --ipc=host --net=host），但是这些参数也并非必需。 
+
+```
+docker run --rm -it -v $PWD/benchmarks:/benchmarks --privileged --pid=host --ipc=host --net=host tensorflow:19.12-tf2-py3-bitfusion
+```
+
+在进入到容器之后，我们就拥有了一套完整的 tensorflow 的环境，我们可以使用与 2.3 同样的方法运行 tensorflow benchmarks 应用，这里就不再重复了。
+
+
+<br />
+
+---
+## 4. 总结
+
+Bitfusion 很好玩，机器学习也很性感。 大家都想试一试。 但是如果你一直在环境配置的泥潭中挣扎，体验一定不好。 不如试一试 Conda 或者 容器。
+
+最后，如果您希望挑战一下自己，不妨尝试 Kubernetes + 机器学习 + Bitfusion，请访问 https://github.com/vmware/bitfusion-with-kubernetes-integration。 您将同时掌握三个分属于不同领域的最前沿技术 —— 软件工程、数据科学、IT 基础设施，从此走向人生巅峰，此处应有 BGM。 :-)
+
+
+<br/><br/>
+正文完
+<br/><br/>
+
+---
+
+参考资料：
+1. Conda 用户手册：https://docs.conda.io/projects/conda/en/latest/user-guide/index.html
+2. Conda tensorflow 安装手册: https://docs.anaconda.com/anaconda/user-guide/tasks/tensorflow/
+3. VMware Bitfusion 官方文档：https://docs.vmware.com/cn/VMware-vSphere-Bitfusion/index.html
+4. Tensorflow tf_cnn_benchmarks 使用手册: https://github.com/tensorflow/benchmarks/tree/master/scripts/tf_cnn_benchmarks
