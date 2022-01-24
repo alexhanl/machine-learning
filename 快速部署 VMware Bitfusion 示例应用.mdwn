@@ -238,6 +238,8 @@ sudo usermod -aG docker $USER
 
 具体描述如下：
 1. 到 vSphere Web Client 生成并下载 bitfusion token，如图所示：
+![token](./images/token.png)
+
 
 <br />
 <br />
